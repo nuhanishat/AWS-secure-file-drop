@@ -489,10 +489,10 @@ EOF
 ## 🖼️ Diagram (Mermaid)
 Save as `docs/diagram.mmd` and embed in README. GitHub renders Mermaid automatically.
 ```mermaid
-graph LR
-  A[External User] -- PUT (presigned) --> B[(Amazon S3<br/>Private Bucket)]
-  C[EC2 Ingress Instance\n(IAM Role, no keys)] -- Sync /opt/filedrop/uploads --> B
-  D[Your Browser/CLI] -- GET (presigned) --> B
+flowchart LR
+  A[External user] -->|PUT (presigned)| B[S3 (private bucket)]
+  D[Your browser/CLI] -->|GET (presigned)| B
+  C[EC2 ingress instance (IAM role, no keys)] -->|sync /opt/filedrop/uploads| B
   subgraph EC2
     C
   end
