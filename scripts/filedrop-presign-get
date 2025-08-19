@@ -1,0 +1,11 @@
+#!/bin/bash
+set -euo pipefail
+source /etc/filedrop.conf
+REL="${1:-}"
+if [[ -z "$REL" ]]; then
+  echo "Usage: filedrop-presign-get <relative-path-under-PREFIX> [expires-seconds]" >&2
+  exit 1
+fi
+EXPIRES="${2:-$EXPIRES_DEFAULT}"
+KEY="${PREFIX:+$PREFIX/}$REL"
+aws s3 presign "s3://${BUCKET}/${KEY}" --expires-in "$EXPIRES" --region "${REGION:-us-east-1}"

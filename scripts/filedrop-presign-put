@@ -1,0 +1,43 @@
+#!/usr/bin/env python3
+import os, sys, boto3
+from botocore.config import Config
+
+CONF = "/etc/filedrop.conf"
+cfg = {"BUCKET":"", "PREFIX":"", "EXPIRES_DEFAULT":"3600", "REGION":""}
+
+# Load config
+if os.path.exists(CONF):
+    for line in open(CONF):
+        line=line.strip()
+        if not line or line.startswith('#') or '=' not in line: continue
+        k,v = line.split('=',1)
+        cfg[k.strip()] = v.strip().strip('"')
+
+if len(sys.argv) < 2:
+    print("Usage: filedrop-presign-put <relative-path-under-PREFIX> [expires-seconds]", file=sys.stderr)
+    sys.exit(1)
+
+rel = sys.argv[1]
+expires = int(sys.argv[2]) if len(sys.argv) > 2 else int(cfg.get("EXPIRES_DEFAULT","3600"))
+
+bucket = cfg.get("BUCKET","" ).strip()
+prefix = cfg.get("PREFIX","" ).strip()
+region = cfg.get("REGION","" ).strip()
+if not bucket:
+    print("Error: BUCKET is not set in /etc/filedrop.conf", file=sys.stderr); sys.exit(2)
+if not region:
+    print("Error: REGION is not set in /etc/filedrop.conf (e.g., us-east-2)", file=sys.stderr); sys.exit(3)
+
+key = f"{prefix}/{rel}" if prefix else rel
+endpoint = f"https://s3.{region}.amazonaws.com"
+s3 = boto3.client("s3", region_name=region,
+                  endpoint_url=endpoint,
+                  config=Config(signature_version="s3v4", s3={"addressing_style":"virtual"}))
+
+url = s3.generate_presigned_url(
+    ClientMethod="put_object",
+    Params={"Bucket": bucket, "Key": key},
+    ExpiresIn=expires,
+    HttpMethod="PUT"
+)
+print(url)
