@@ -61,28 +61,28 @@ All commands run **on the EC2 instance**.
 Create a URL that lets someone upload a specific file **without AWS creds**:
 ```bash
 # Allows a collaborator to upload to: s3://nuha-secure-file-drop-v1/uploads/incoming/newfile.bin
-filedrop-presign-put incoming/newfile.bin 900   # 15-minute expiry
+filedrop-presign-put incoming/<FILE_NAME.TYPE> 900   # 15-minute expiry
 ```
 Share the printed URL with your collaborator. They upload from their machine:
 ```bash
-curl -X PUT -T ./newfile.bin "<PASTE_URL_FROM_YOU>"
+curl -X PUT -T ./<FILE_NAME.TYPE> "<PASTE_URL_FROM_YOU>"
 ```
 
 ### 2) Verify the object exists
 ```bash
 aws s3 ls s3://nuha-secure-file-drop-v1/uploads/incoming/ --region us-east-2
 # or inspect metadata
-aws s3api head-object --bucket nuha-secure-file-drop-v1 --key uploads/incoming/newfile.bin --region us-east-2
+aws s3api head-object --bucket nuha-secure-file-drop-v1 --key uploads/incoming/<FILE_NAME.TYPE> --region us-east-2
 ```
 
 ### 3) Generate a **download** link (GET)
 ```bash
-filedrop-presign-get incoming/newfile.bin 600   # 10-minute expiry
+filedrop-presign-get incoming/<FILE_NAME.TYPE> 600   # 10-minute expiry
 # Open the printed URL in a browser to download
 ```
 
 > 🔑 **Keys & paths**
-> - The `PREFIX` is `uploads/` by default. When you presign for `incoming/newfile.bin`, the S3 key becomes `uploads/incoming/newfile.bin`.
+> - The `PREFIX` is `uploads/` by default. When you presign for `incoming/<FILE_NAME.TYPE>`, the S3 key becomes `uploads/incoming/<FILE_NAME.TYPE>`.
 > - The uploader’s **local filename** doesn’t affect the S3 key.
 
 ---
@@ -165,8 +165,6 @@ secure-file-drop/
 ├─ scripts/
 │  ├─ filedrop-presign-get
 │  └─ filedrop-presign-put
-└─ docs/
-   └─ diagram.mmd
 ```
 
 ### .gitignore
